@@ -1,22 +1,46 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
+    setSuccess('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.username || !form.password) {
       setError('All fields are required.');
       return;
     }
-    // TODO: Add login logic here
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: form.username, password: form.password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.token) {
+        localStorage.setItem('token', data.token);
+        setSuccess('Login successful!');
+        // Optionally redirect or update UI here
+      } else {
+        setError(data.message || 'Login failed');
+      }
+    } catch (err) {
+      setError('Network error');
+    }
+    setLoading(false);
   };
 
   return (
@@ -57,9 +81,16 @@ const Login: React.FC = () => {
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            disabled={loading}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
+          {error && form.username && form.password && (
+            <div className="text-red-500 text-center text-sm mt-2">{error}</div>
+          )}
+          {success && (
+            <div className="text-green-600 text-center text-sm mt-2">{success}</div>
+          )}
         </form>
         <p className="mt-4 text-center text-sm">
           Don't have an account?{' '}

@@ -9,13 +9,16 @@ const Signup: React.FC = () => {
     confirm_password: '',
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
+    setSuccess('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.username || !form.email || !form.password || !form.confirm_password) {
       setError('All fields are required.');
@@ -29,7 +32,30 @@ const Signup: React.FC = () => {
       setError('Passwords do not match.');
       return;
     }
-    // TODO: Add signup logic here
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess('Signup successful! You can now log in.');
+        setForm({ username: '', email: '', password: '', confirm_password: '' });
+      } else {
+        setError(data.message || 'Signup failed');
+      }
+    } catch (err) {
+      setError('Network error');
+    }
+    setLoading(false);
   };
 
   return (
@@ -81,7 +107,15 @@ const Signup: React.FC = () => {
             />
             {error && form.password !== form.confirm_password && <div className="text-red-500 text-sm">Please confirm your password.</div>}
           </label>
-          <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Signup</button>
+          <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700" disabled={loading}>
+            {loading ? 'Signing up...' : 'Signup'}
+          </button>
+          {error && form.username && form.email && form.password && form.confirm_password && (
+            <div className="text-red-500 text-center text-sm mt-2">{error}</div>
+          )}
+          {success && (
+            <div className="text-green-600 text-center text-sm mt-2">{success}</div>
+          )}
         </form>
         <p className="mt-4 text-center text-sm">
           Already have an account?{' '}

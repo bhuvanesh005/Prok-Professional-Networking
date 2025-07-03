@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,10 +30,12 @@ const Login: React.FC = () => {
         body: JSON.stringify({ username: form.username, password: form.password }),
       });
       const data = await res.json();
+      console.log('[DEBUG] Login response:', data);
       if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
+        console.log('[DEBUG] Token saved to localStorage:', localStorage.getItem('token'));
         setSuccess('Login successful!');
-        // Optionally redirect or update UI here
+        navigate('/profile'); // Redirect to profile after login
       } else {
         setError(data.message || 'Login failed');
       }

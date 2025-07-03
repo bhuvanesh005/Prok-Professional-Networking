@@ -1,14 +1,19 @@
 from flask import Blueprint, request, jsonify
+from flask_cors import CORS
 from models.user import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
+from flask_jwt_extended import create_access_token  # <-- Add this import
+from models.profile import Profile  # <-- Add this import
 import datetime
 from flask import current_app
 
 auth_bp = Blueprint('auth', __name__)
+CORS(auth_bp)  # Enable CORS for this blueprint
 
-@auth_bp.route('/api/signup', methods=['POST'])
+@auth_bp.route('/api/signup', methods=['POST', 'OPTIONS'])
 def signup():
+    if request.method == 'OPTIONS':
+        return '', 200
     data = request.get_json()
     username = data.get('username')
     email = data.get('email')
@@ -21,10 +26,16 @@ def signup():
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
+    # Create a profile for the new user
+    profile = Profile(user_id=user.id, bio='', location='')
+    db.session.add(profile)
+    db.session.commit()
     return jsonify({'message': 'User created successfully'}), 201
 
-@auth_bp.route('/api/login', methods=['POST'])
+@auth_bp.route('/api/login', methods=['POST', 'OPTIONS'])
 def login():
+    if request.method == 'OPTIONS':
+        return '', 200
     data = request.get_json()
     username_or_email = data.get('username')
     password = data.get('password')
@@ -36,8 +47,5 @@ def login():
     if not user or not user.check_password(password):
         print("[DEBUG] Invalid credentials")
         return jsonify({'message': 'Invalid credentials'}), 401
-    token = jwt.encode({
-        'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-    }, current_app.config['SECRET_KEY'], algorithm='HS256')
-    return jsonify({'token': token, 'user': user.to_dict()}), 200
+    access_token = create_access_token(identity=str(user.id))  # <-- Use string for identity
+    return jsonify({'token': access_token, 'user': user.to_dict()}), 200

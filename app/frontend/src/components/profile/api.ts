@@ -2,23 +2,31 @@ const API_URL = 'http://localhost:5000';
 
 export const profileApi = {
   getProfile: async () => {
-    const response = await fetch(`${API_URL}/profile`, {
+    const token = localStorage.getItem('token');
+    console.log('[DEBUG] Using JWT token:', token);
+    const response = await fetch(`${API_URL}/api/profile`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
-    return response.json();
+    const data = await response.json();
+    console.log('[DEBUG] /api/profile response:', data);
+    return data;
   },
 
   updateProfile: async (profileData: any) => {
-    const response = await fetch(`${API_URL}/profile`, {
+    const token = localStorage.getItem('token');
+    console.log('[DEBUG] Using JWT token:', token);
+    const response = await fetch(`${API_URL}/api/profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(profileData),
     });
-    return response.json();
+    const data = await response.json();
+    console.log('[DEBUG] /api/profile PUT response:', data);
+    return data;
   },
-}; 
+};

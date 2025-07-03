@@ -12,6 +12,9 @@ class Config:
     # JWT
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_TOKEN_LOCATION = ["headers"]
+    JWT_HEADER_NAME = "Authorization"  # Add this line
+    JWT_HEADER_TYPE = "Bearer"         # Add this line
     
     # CORS
-    CORS_HEADERS = 'Content-Type' 
+    CORS_HEADERS = 'Content-Type'

@@ -32,6 +32,7 @@ const ProfileEdit: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [education, setEducation] = useState<any[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
+  const [avatarCacheBuster, setAvatarCacheBuster] = useState(Date.now());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -100,11 +101,16 @@ const ProfileEdit: React.FC = () => {
     setSuccess('');
   };
 
-  const handleImageChange = (file: File | null) => {
+  const handleImageChange = (file: File | null, error?: string) => {
     setAvatarFile(file);
     setSuccess('');
-    if (file) {
+    if (file && !error) {
       setAvatarPreview(URL.createObjectURL(file));
+      setErrors((prev: any) => ({ ...prev, avatar: undefined }));
+      setAvatarCacheBuster(Date.now()); // Update cache buster on new image
+    } else if (error) {
+      setAvatarPreview(form.avatarUrl);
+      setErrors((prev: any) => ({ ...prev, avatar: error }));
     } else {
       setAvatarPreview(form.avatarUrl);
     }
@@ -171,6 +177,7 @@ const ProfileEdit: React.FC = () => {
         })),
       };
       await profileApi.updateProfile(payload);
+      localStorage.removeItem('profile_cache'); // Clear cache so profile page fetches fresh data
       setSuccess('Profile updated successfully!');
       setTimeout(() => navigate('/profile'), 800); // Go back after save
     } catch {
@@ -178,6 +185,10 @@ const ProfileEdit: React.FC = () => {
     }
     setLoading(false);
   };
+
+  function isBlobUrl(url: string | null): boolean {
+    return !!url && url.startsWith('blob:');
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -195,7 +206,7 @@ const ProfileEdit: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <div className="relative flex justify-center mb-4">
             <ProfileImageUpload
-              imageUrl={avatarPreview}
+              imageUrl={avatarPreview ? (isBlobUrl(avatarPreview) ? avatarPreview : `${avatarPreview}?cb=${avatarCacheBuster}`) : null}
               onImageChange={handleImageChange}
               uploading={uploading}
               progress={progress}
@@ -204,6 +215,7 @@ const ProfileEdit: React.FC = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 00-4-4l-8 8v3h3z" /></svg>
             </span>
           </div>
+          {errors.avatar && <div className="text-red-500 text-xs text-center mb-2">{errors.avatar}</div>}
           <div className="grid md:grid-cols-2 gap-4">
             <ProfileFormInput label="Name" name="name" value={form.name} onChange={handleChange} error={errors.name} />
             <ProfileFormInput label="Title" name="title" value={form.title} onChange={handleChange} error={errors.title} />

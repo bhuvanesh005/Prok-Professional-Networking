@@ -11,6 +11,7 @@ class Profile(db.Model):
     languages = db.Column(db.String(256))  # New field
     connections = db.Column(db.Integer, default=0)  # New field
     mutualConnections = db.Column(db.Integer, default=0)  # New field
+    avatar_url = db.Column(db.String(256))  # Store avatar image path
     # Add more fields as needed
 
 class Skill(db.Model):

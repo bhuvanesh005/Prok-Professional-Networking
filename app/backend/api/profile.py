@@ -3,8 +3,35 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.user import User
 from models.profile import Profile
 from models import db
+import os
+from werkzeug.utils import secure_filename
+from PIL import Image
+import time
+import magic
 
 profile_bp = Blueprint('profile', __name__)
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../static/uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def validate_image(file):
+    # Check file type
+    file.seek(0)
+    mime = magic.from_buffer(file.read(2048), mime=True)
+    file.seek(0)
+    if mime not in ['image/jpeg', 'image/png']:
+        return False
+    # Check file size
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    file.seek(0)
+    if size > MAX_FILE_SIZE:
+        return False
+    return True
 
 @profile_bp.route('/api/profile', methods=['GET'])
 @jwt_required()
@@ -187,3 +214,38 @@ def update_profile():
     if avatar_url:
         response['avatarUrl'] = avatar_url
     return jsonify(response)
+
+@profile_bp.route('/api/profile/image', methods=['POST'])
+@jwt_required()
+def upload_profile_image():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    profile = Profile.query.filter_by(user_id=user_id).first()
+    if not user or not profile:
+        return jsonify({'message': 'Profile not found'}), 404
+    if 'image' not in request.files:
+        return jsonify({'message': 'No file part'}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'message': 'No selected file'}), 400
+    if not allowed_file(file.filename) or not validate_image(file):
+        return jsonify({'message': 'Invalid file type or size'}), 400
+    # Secure file naming
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"profile_{user_id}_{int(time.time())}.{ext}"
+    filename = secure_filename(filename)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    # Image processing: compression, resizing, thumbnail, format conversion
+    image = Image.open(file)
+    image = image.convert('RGB')
+    image.thumbnail((400, 400))  # Resize
+    image.save(filepath, format='JPEG', quality=85, optimize=True)  # Compression
+    # Optionally, generate thumbnail
+    thumb_path = os.path.join(UPLOAD_FOLDER, f"thumb_{filename}")
+    image.thumbnail((100, 100))
+    image.save(thumb_path, format='JPEG', quality=70, optimize=True)
+    # Update profile with image URL (relative path)
+    profile.avatar_url = f"/static/uploads/{filename}"
+    db.session.commit()
+    return jsonify({'imageUrl': profile.avatar_url}), 200

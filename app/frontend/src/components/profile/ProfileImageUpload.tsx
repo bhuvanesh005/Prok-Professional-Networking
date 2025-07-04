@@ -2,24 +2,49 @@ import React, { useRef } from 'react';
 
 interface ProfileImageUploadProps {
   imageUrl: string | null;
-  onImageChange: (file: File | null) => void;
+  onImageChange: (file: File | null, error?: string) => void;
   uploading: boolean;
   progress: number;
 }
 
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png'];
+
 const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ imageUrl, onImageChange, uploading, progress }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const validateFile = (file: File) => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      
+      onImageChange(null, 'Only JPG and PNG images are allowed.');
+      return false;
+    }
+    if (file.size > MAX_SIZE) {
+      setError('Image must be less than 5MB.');
+      onImageChange(null, 'Image must be less than 5MB.');
+      return false;
+    }
+    setError(null);
+    return true;
+  };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onImageChange(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      if (validateFile(file)) {
+        onImageChange(file);
+      }
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      onImageChange(e.target.files[0]);
+      const file = e.target.files[0];
+      if (validateFile(file)) {
+        onImageChange(file);
+      }
     }
   };
 
@@ -41,11 +66,12 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ imageUrl, onIma
       </div>
       <input
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png"
         ref={fileInputRef}
         className="hidden"
         onChange={handleFileChange}
       />
+      {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
       {uploading && (
         <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
           <div

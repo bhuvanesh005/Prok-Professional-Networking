@@ -29,4 +29,19 @@ export const profileApi = {
     console.log('[DEBUG] /api/profile PUT response:', data);
     return data;
   },
+
+  uploadProfileImage: async (file: File) => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await fetch(`${API_URL}/api/profile/image`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    const data = await response.json();
+    return data;
+  },
 };

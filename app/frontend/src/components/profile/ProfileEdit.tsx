@@ -150,10 +150,19 @@ const ProfileEdit: React.FC = () => {
       if (avatarFile) {
         setUploading(true);
         setProgress(30);
-        // Simulate upload
-        await new Promise(res => setTimeout(res, 800));
+        // Upload the image to backend
+        const uploadRes = await profileApi.uploadProfileImage(avatarFile);
+        if (uploadRes && uploadRes.imageUrl) {
+          avatarUrl = uploadRes.imageUrl;
+          setAvatarPreview(avatarUrl);
+          setAvatarCacheBuster(Date.now());
+        } else if (uploadRes && uploadRes.message) {
+          setErrors((prev: any) => ({ ...prev, avatar: uploadRes.message }));
+          setUploading(false);
+          setLoading(false);
+          return;
+        }
         setProgress(100);
-        avatarUrl = avatarPreview || form.avatarUrl;
         setUploading(false);
       }
       const payload = {
@@ -178,6 +187,26 @@ const ProfileEdit: React.FC = () => {
       };
       await profileApi.updateProfile(payload);
       localStorage.removeItem('profile_cache'); // Clear cache so profile page fetches fresh data
+      // Re-fetch profile to update avatar and all fields
+      const updated = await profileApi.getProfile();
+      setForm({
+        avatarUrl: updated.avatarUrl || '',
+        name: updated.name || '',
+        title: updated.title || '',
+        location: updated.location || '',
+        bio: updated.bio || '',
+        skills: (updated.skills || []).join(', '),
+        email: updated.contact?.email || '',
+        phone: updated.contact?.phone || '',
+        languages: (updated.languages || []).join(', '),
+        connections: updated.connections?.toString() || '',
+        mutualConnections: updated.mutualConnections?.toString() || '',
+        education: updated.education || [],
+        activity: updated.activity || [],
+      });
+      setAvatarPreview(updated.avatarUrl || '');
+      setEducation(updated.education || []);
+      setActivity(updated.activity || []);
       setSuccess('Profile updated successfully!');
       setTimeout(() => navigate('/profile'), 800); // Go back after save
     } catch {

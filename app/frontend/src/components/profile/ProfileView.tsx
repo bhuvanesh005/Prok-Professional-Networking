@@ -49,6 +49,13 @@ const ProfileView: React.FC = () => {
     })();
   }, [location]);
 
+  const getAvatarUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    // Add cache buster to force reload after update
+    return `http://localhost:5000${url}?cb=${Date.now()}`;
+  };
+
   if (loading) return <div className="text-center py-10">Loading profile...</div>;
   if (error) return (
     <div className="text-center py-10 text-red-500">
@@ -77,10 +84,8 @@ const ProfileView: React.FC = () => {
         {/* Avatar */}
         <div className="flex-shrink-0">
           <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow">
-            {profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="Avatar" className="object-cover w-full h-full" />
-            ) : (
-              <span className="text-5xl text-gray-400">👤</span>
+            {profile.avatarUrl && (
+              <img src={getAvatarUrl(profile.avatarUrl)} alt="Profile" className="object-cover w-full h-full" />
             )}
           </div>
         </div>

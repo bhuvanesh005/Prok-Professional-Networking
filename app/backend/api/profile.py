@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.user import User
 from models.profile import Profile
@@ -89,7 +89,7 @@ def get_profile():
         'activity': activity,
         'connections': getattr(profile, 'connections', 0),
         'mutualConnections': getattr(profile, 'mutualConnections', 0),
-        'avatarUrl': '',
+        'avatarUrl': profile.avatar_url or '',  # <-- FIXED: return the actual avatar url
         'socialLinks': [],
     })
 
@@ -114,7 +114,6 @@ def update_profile():
         languages_raw = form.get('languages')
         connections = form.get('connections')
         mutualConnections = form.get('mutualConnections')
-        avatar = files.get('avatar')
         phone = form.get('phone')
         location = form.get('location')
         # Parse skills as JSON array if present
@@ -203,16 +202,10 @@ def update_profile():
                     date=act.get('date', '')
                 ))
 
-    # Optionally handle avatar upload (not implemented, just placeholder)
-    avatar_url = None
-    if avatar:
-        # Save avatar to static/uploads and set avatar_url (implement as needed)
-        pass
-
     db.session.commit()
     response = {'message': 'Profile updated successfully'}
-    if avatar_url:
-        response['avatarUrl'] = avatar_url
+    if profile.avatar_url:
+        response['avatarUrl'] = profile.avatar_url
     return jsonify(response)
 
 @profile_bp.route('/api/profile/image', methods=['POST'])
@@ -249,3 +242,8 @@ def upload_profile_image():
     profile.avatar_url = f"/static/uploads/{filename}"
     db.session.commit()
     return jsonify({'imageUrl': profile.avatar_url}), 200
+
+# Serve uploaded profile images
+@profile_bp.route('/static/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../static/uploads'), filename)

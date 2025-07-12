@@ -151,9 +151,11 @@ const ProfileView: React.FC = () => {
               {profile.activity?.length ? (
                 profile.activity.slice(0, 5).map((act: any, i: number) => (
                   <div key={i} className="mb-2">
-                    <div className="font-semibold">{act.type}</div>
+                    <div className="flex justify-between items-center font-semibold">
+                      <span>{act.type}</span>
+                      <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">{act.date}</span>
+                    </div>
                     <div>{act.content}</div>
-                    <div className="text-xs text-gray-500">{act.date}</div>
                   </div>
                 ))
               ) : (

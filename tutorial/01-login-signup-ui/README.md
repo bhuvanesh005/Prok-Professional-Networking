@@ -34,7 +34,7 @@ git checkout -b your-assignment-branch-name
 ```
 
 > **What's happening?** You're creating an independent line of development. The master branch in your repository should ideally remain a clean copy of the original template. Your new branch is where you'll make all your assignment-specific changes.
-
+  
 2.**Install Dependencies**
 
 ```bash

@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { profileApi } from './api';
+import { postsApi } from '../posts/api';
+import PostList from '../posts/PostList';
+import type { Post } from '../../types';
 
 const PROFILE_CACHE_KEY = 'profile_cache';
 
 const ProfileView: React.FC = () => {
   const [profile, setProfile] = useState<any | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [offline, setOffline] = useState(!navigator.onLine);
@@ -27,25 +31,34 @@ const ProfileView: React.FC = () => {
     (async () => {
       setLoading(true);
       setError('');
+
+      if (offline) {
+        const cachedProfile = localStorage.getItem(PROFILE_CACHE_KEY);
+        if (cachedProfile) {
+          setProfile(JSON.parse(cachedProfile));
+          setError('Offline: showing cached profile.');
+        } else {
+          setError('You are offline and no cached profile is available.');
+        }
+        setLoading(false);
+        return;
+      }
+
       try {
-        const data = await profileApi.getProfile();
-        if (data && data.name) {
-          setProfile(data);
-          localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(data));
+        const profileData = await profileApi.getProfile();
+        if (profileData && profileData.name) {
+          setProfile(profileData);
+          localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(profileData));
+          const userPosts = await postsApi.getPostsByUser(profileData.id);
+          setPosts(userPosts);
         } else {
           setError('Profile not found.');
         }
-      } catch {
-        // Try to load from cache if offline or fetch fails
-        const cached = localStorage.getItem(PROFILE_CACHE_KEY);
-        if (cached) {
-          setProfile(JSON.parse(cached));
-          setError('Offline: showing cached profile.');
-        } else {
-          setError('Could not fetch profile.');
-        }
+      } catch (err) {
+        setError('Could not fetch profile. Please try again later.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [location]);
 
@@ -162,6 +175,18 @@ const ProfileView: React.FC = () => {
                 <div>No recent activity.</div>
               )}
               {profile.activity?.length > 5 && <div className="text-blue-600 mt-2">Show more activity</div>}
+            </div>
+            <div className="bg-white rounded shadow p-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold">Posts</h3>
+                <button
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  onClick={() => navigate('/posts/create')}
+                >
+                  Create Post
+                </button>
+              </div>
+              <PostList posts={posts} showUsername={false} />
             </div>
           </div>
           {/* Right Column */}

@@ -76,6 +76,7 @@ def get_profile():
         for a in Activity.query.filter_by(profile_id=profile.id).order_by(Activity.id.desc()).all()
     ]
     return jsonify({
+        'id': user.id,
         'name': user.username,
         'email': user.email,
         'title': getattr(profile, 'title', ''),

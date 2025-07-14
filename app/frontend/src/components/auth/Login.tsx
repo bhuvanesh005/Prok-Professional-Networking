@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authApi } from './api';
 
 const Login: React.FC = () => {
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -16,7 +17,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.username || !form.password) {
+    if (!form.email || !form.password) {
       setError('All fields are required.');
       return;
     }
@@ -24,18 +25,11 @@ const Login: React.FC = () => {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: form.username, password: form.password }),
-      });
-      const data = await res.json();
-      console.log('[DEBUG] Login response:', data);
-      if (res.ok && data.token) {
+      const data = await authApi.login({ email: form.email, password: form.password });
+      if (data && data.token) {
         localStorage.setItem('token', data.token);
-        console.log('[DEBUG] Token saved to localStorage:', localStorage.getItem('token'));
         setSuccess('Login successful!');
-        navigate('/profile'); // Redirect to profile after login
+        navigate('/profile');
       } else {
         setError(data.message || 'Login failed');
       }
@@ -54,13 +48,13 @@ const Login: React.FC = () => {
             Username or Email
             <input
               type="text"
-              name="username"
+              name="email"
               placeholder="Username or Email"
-              value={form.username}
+              value={form.email}
               onChange={handleChange}
               className="w-full p-2 border rounded mt-1"
             />
-            {error && !form.username && (
+            {error && !form.email && (
               <div className="text-red-500 text-sm">
                 Username or Email is required.
               </div>
@@ -87,7 +81,7 @@ const Login: React.FC = () => {
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
-          {error && form.username && form.password && (
+          {error && form.email && form.password && (
             <div className="text-red-500 text-center text-sm mt-2">{error}</div>
           )}
           {success && (

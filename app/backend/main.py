@@ -11,8 +11,10 @@ load_dotenv()
 from models import db
 from models.user import User
 from models.profile import Profile, Skill, Experience, Education
+from models.post import Post
 from api.auth import auth_bp
 from api.profile import profile_bp
+from api.posts import posts_bp
 
 # Create Flask app
 app = Flask(__name__)
@@ -32,6 +34,7 @@ def setup_database():
 # Register Blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(profile_bp)
+app.register_blueprint(posts_bp)
 
 # Create a function to initialize the app
 def create_app():

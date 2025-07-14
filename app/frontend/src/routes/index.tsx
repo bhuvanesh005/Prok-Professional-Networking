@@ -3,7 +3,7 @@ import Login from '../components/auth/Login';
 import Signup from '../components/auth/Signup';
 import ProfileView from '../components/profile/ProfileView';
 import ProfileEdit from '../components/profile/ProfileEdit';
-import PostCreate from '../components/posts/PostCreate';
+import PostCreationForm from '../components/posts/PostCreationForm';
 import PostList from '../components/posts/PostList';
 import Feed from '../components/feed/Feed';
 import JobList from '../components/job-board/JobList';
@@ -32,11 +32,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/posts/create',
-    element: <PostCreate />,
-  },
-  {
-    path: '/posts',
-    element: <PostList />,
+    element: <PostCreationForm />,
   },
   {
     path: '/jobs',

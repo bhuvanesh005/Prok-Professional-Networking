@@ -1,14 +1,20 @@
 const API_URL = 'http://localhost:5000';
 
 export const postsApi = {
-  createPost: async (content: string) => {
+  createPost: async (title: string, content: string, media?: File) => {
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    if (media) {
+      formData.append('media', media);
+    }
+
     const response = await fetch(`${API_URL}/posts`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
-      body: JSON.stringify({ content }),
+      body: formData,
     });
     return response.json();
   },
@@ -31,4 +37,13 @@ export const postsApi = {
     });
     return response.json();
   },
-}; 
+
+  getPostsByUser: async (userId: number) => {
+    const response = await fetch(`${API_URL}/users/${userId}/posts`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.json();
+  },
+};

@@ -8,6 +8,8 @@ export interface User {
 export interface Profile {
   id: number;
   user_id: number;
+  name: string;
+  email: string;
   bio: string;
   location: string;
   skills: string[];
@@ -36,10 +38,13 @@ export interface Education {
 export interface Post {
   id: number;
   user_id: number;
+  title: string;
   content: string;
   created_at: string;
-  likes: number;
-  comments: Comment[];
+  likes?: number;
+  comments?: Comment[];
+  user?: string;
+  media_url?: string;
 }
 
 export interface Comment {

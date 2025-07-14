@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { authApi } from './api';
 
 const Signup: React.FC = () => {
   const [form, setForm] = useState({
@@ -11,6 +12,7 @@ const Signup: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -36,19 +38,15 @@ const Signup: React.FC = () => {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('http://localhost:5000/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: form.username,
-          email: form.email,
-          password: form.password,
-        }),
+      const data = await authApi.signup({
+        name: form.username,
+        email: form.email,
+        password: form.password,
       });
-      const data = await res.json();
-      if (res.ok) {
+      if (data && data.message === 'User created successfully') {
         setSuccess('Signup successful! You can now log in.');
         setForm({ username: '', email: '', password: '', confirm_password: '' });
+        navigate('/login');
       } else {
         setError(data.message || 'Signup failed');
       }

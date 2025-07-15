@@ -71,7 +71,23 @@ def test_get_posts():
             query = query.filter(Post.category == category)
         
         # Apply sorting
-        query = query.order_by(desc(Post.created_at))
+        sort_by = request.args.get('sort_by', 'created_at')
+        sort_order = request.args.get('sort_order', 'desc')
+        
+        # Map frontend sort options to database columns
+        sort_column_map = {
+            'created_at': Post.created_at,
+            'likes_count': Post.likes_count,
+            'views_count': Post.views_count,
+            'title': Post.title
+        }
+        
+        sort_column = sort_column_map.get(sort_by, Post.created_at)
+        
+        if sort_order.lower() == 'asc':
+            query = query.order_by(asc(sort_column))
+        else:
+            query = query.order_by(desc(sort_column))
         
         # Execute pagination
         paginated_posts = query.paginate(

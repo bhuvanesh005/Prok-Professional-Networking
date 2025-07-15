@@ -29,7 +29,7 @@ const FloatingSettings: React.FC = () => {
   return (
     <>
       <button
-        className="fixed z-50 bottom-6 right-6 bg-card-light dark:bg-card-dark shadow-lg rounded-full p-4 text-2xl text-gray-500 hover:text-primary dark:hover:text-primary transition-colors duration-300 border border-gray-200 dark:border-gray-700"
+        className="fixed z-50 bottom-6 right-6 bg-white dark:bg-gray-800 shadow-lg rounded-full p-4 text-2xl text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 border border-gray-200 dark:border-gray-700"
         onClick={() => setOpen(true)}
         aria-label="Open settings"
       >

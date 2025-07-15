@@ -233,9 +233,9 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4 bg-gray-50 min-h-screen">
+    <div className="max-w-4xl mx-auto p-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Search and Filter Bar */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-4 items-center">
           {/* Search Bar */}
           <div className="flex-1 w-full md:w-auto">
@@ -250,7 +250,7 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search posts..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
           </div>
@@ -261,7 +261,7 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
             >
               <option value="">All Posts</option>
               {categories.map(category => (
@@ -279,7 +279,7 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
                 setSortBy(newSortBy);
                 setSortOrder(newSortOrder as 'asc' | 'desc');
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
             >
               <option value="created_at-desc">Newest First</option>
               <option value="created_at-asc">Oldest First</option>
@@ -313,7 +313,7 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-6">
           <div className="flex">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -337,7 +337,7 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
             <div
               key={post.id}
               ref={index === posts.length - 1 ? lastElementRef : null}
-              className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
             >
               {/* Post Header */}
               <div className="p-6 pb-4">
@@ -362,11 +362,11 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
                 </div>
 
                 {/* Post Title */}
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{post.title}</h3>
 
                 {/* Post Content */}
                 <div
-                  className="text-gray-700 mb-4 line-clamp-3"
+                  className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3"
                   dangerouslySetInnerHTML={{ __html: post.content }}
                 />
 
@@ -398,7 +398,7 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center space-x-6">
                     {/* Like Button */}
                     <button
@@ -433,7 +433,7 @@ const PostListAdvanced: React.FC<PostListAdvancedProps> = ({
 
                   {/* Category Badge */}
                   {post.category && (
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
                       {post.category}
                     </span>
                   )}

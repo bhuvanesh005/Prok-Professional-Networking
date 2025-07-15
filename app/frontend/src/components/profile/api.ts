@@ -44,4 +44,13 @@ export const profileApi = {
     const data = await response.json();
     return data;
   },
+
+  // Test method that bypasses authentication
+  getProfileTest: async () => {
+    console.log('[DEBUG] Using test endpoint (no auth required)');
+    const response = await fetch(`${API_URL}/api/profile/test`);
+    const data = await response.json();
+    console.log('[DEBUG] /api/profile/test response:', data);
+    return data;
+  },
 };

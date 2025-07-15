@@ -45,6 +45,7 @@ const ProfileView: React.FC = () => {
       }
 
       try {
+        // Try the authenticated endpoint first
         const profileData = await profileApi.getProfile();
         if (profileData && profileData.name) {
           setProfile(profileData);
@@ -55,7 +56,21 @@ const ProfileView: React.FC = () => {
           setError('Profile not found.');
         }
       } catch (err) {
-        setError('Could not fetch profile. Please try again later.');
+        console.log('[DEBUG] Auth endpoint failed, trying test endpoint...');
+        try {
+          // Fallback to test endpoint if auth fails
+          const profileData = await profileApi.getProfileTest();
+          if (profileData && profileData.name) {
+            setProfile(profileData);
+            localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(profileData));
+            const userPosts = await postsApi.getPostsByUser(profileData.id);
+            setPosts(userPosts);
+          } else {
+            setError('Profile not found.');
+          }
+        } catch (testErr) {
+          setError('Could not fetch profile. Please try again later.');
+        }
       } finally {
         setLoading(false);
       }
@@ -74,17 +89,25 @@ const ProfileView: React.FC = () => {
     <div className="text-center py-10 text-red-500">
       {error}
       <div className="mt-4 text-xs text-gray-400">
-        <div>Token: {localStorage.getItem('token') || 'No token found'}</div>
+        <div>Token: {localStorage.getItem('token') ? 'Present (may be expired)' : 'No token found'}</div>
         <div>API Response: {error}</div>
-        <button
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={() => {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-          }}
-        >
-          Log in again
-        </button>
+        <div className="mt-4 space-x-2">
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={() => {
+              localStorage.removeItem('token');
+              window.location.href = '/login';
+            }}
+          >
+            Log in again
+          </button>
+          <button
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            onClick={() => window.location.reload()}
+          >
+            Refresh Page
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -112,13 +135,19 @@ const ProfileView: React.FC = () => {
           </div>
           {/* Add social links here if needed */}
         </div>
-        {/* Edit Button */}
-        <div className="flex-shrink-0">
+        {/* Edit Button and Go to Feed Button */}
+        <div className="flex-shrink-0 flex flex-col gap-2 items-end">
           <button
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-2"
             onClick={() => navigate('/profile/edit')}
           >
             Edit Profile
+          </button>
+          <button
+            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            onClick={() => navigate('/feed')}
+          >
+            Go to Feed
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import SettingsDialog from "./SettingsDialog";
 
 const FloatingSettings: React.FC = () => {
@@ -9,7 +9,6 @@ const FloatingSettings: React.FC = () => {
       (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     if (darkMode) {

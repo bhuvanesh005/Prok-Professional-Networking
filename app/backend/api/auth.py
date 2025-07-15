@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from flask_cors import CORS
 from models.user import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token  # <-- Add this import
@@ -8,7 +7,6 @@ import datetime
 from flask import current_app
 
 auth_bp = Blueprint('auth', __name__)
-CORS(auth_bp)  # Enable CORS for this blueprint
 
 @auth_bp.route('/api/signup', methods=['POST', 'OPTIONS'])
 def signup():

@@ -3,7 +3,7 @@ from models import db
 class Profile(db.Model):
     __tablename__ = 'profiles'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     bio = db.Column(db.Text)  # Changed from db.String(256) to db.Text
     location = db.Column(db.String(128))
     phone = db.Column(db.String(32))  # Added phone field

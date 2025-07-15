@@ -9,6 +9,7 @@ const PostCreationForm = () => {
   const [media, setMedia] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   const handleContentChange = (value: string) => {
@@ -25,12 +26,15 @@ const PostCreationForm = () => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccess(false);
 
     try {
       await postsApi.createPost(title, content, media || undefined);
       setTitle('');
       setContent('');
       setMedia(null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2500);
     } catch (err) {
       setError('Failed to create post. Please try again.');
     } finally {
@@ -40,6 +44,12 @@ const PostCreationForm = () => {
 
   return (
     <div className="flex flex-col p-8 bg-gray-100">
+      {/* Success Snackbar */}
+      {success && (
+        <div className="fixed top-6 right-6 z-50 bg-green-500 text-white px-6 py-3 rounded shadow-lg animate-fade-in">
+          Post created successfully!
+        </div>
+      )}
       <div className="flex-1 max-w-4xl mx-auto w-full">
         <h1 className="text-3xl font-bold mb-6">Create a New Post</h1>
         {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}

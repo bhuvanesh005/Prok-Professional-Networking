@@ -36,63 +36,139 @@ def validate_image(file):
 @profile_bp.route('/api/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    profile = Profile.query.filter_by(user_id=user_id).first()
-    if not user or not profile:
-        return jsonify({'message': 'Profile not found'}), 404
-    # Fetch skills as array
-    from models.profile import Skill, Experience, Education, Activity
-    skills = [s.name for s in Skill.query.filter_by(profile_id=profile.id).all()]
-    # Fetch languages as array (store as comma-separated in profile.languages)
-    languages = (profile.languages or '').split(',') if hasattr(profile, 'languages') else []
-    # Fetch experience as list of dicts
-    experience = [
-        {
-            'company': e.company,
-            'title': e.title,
-            'start': str(e.start_date) if e.start_date else '',
-            'end': str(e.end_date) if e.end_date else '',
-        }
-        for e in Experience.query.filter_by(profile_id=profile.id).all()
-    ]
-    # Fetch education as list of dicts
-    education = [
-        {
-            'school': ed.school,
-            'degree': ed.degree,
-            'start': str(ed.start_year) if ed.start_year else '',
-            'end': str(ed.end_year) if ed.end_year else '',
-        }
-        for ed in Education.query.filter_by(profile_id=profile.id).all()
-    ]
-    # Fetch activity as list of dicts
-    activity = [
-        {
-            'type': a.type,
-            'content': a.content,
-            'date': a.date,
-        }
-        for a in Activity.query.filter_by(profile_id=profile.id).order_by(Activity.id.desc()).all()
-    ]
-    return jsonify({
-        'id': user.id,
-        'name': user.username,
-        'email': user.email,
-        'title': getattr(profile, 'title', ''),
-        'bio': profile.bio,
-        'location': profile.location,
-        'skills': skills,
-        'languages': languages,
-        'experience': experience,
-        'education': education,
-        'contact': {'email': user.email, 'phone': getattr(profile, 'phone', '')},
-        'activity': activity,
-        'connections': getattr(profile, 'connections', 0),
-        'mutualConnections': getattr(profile, 'mutualConnections', 0),
-        'avatarUrl': profile.avatar_url or '',  # <-- FIXED: return the actual avatar url
-        'socialLinks': [],
-    })
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        profile = Profile.query.filter_by(user_id=user_id).first()
+        
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        if not profile:
+            return jsonify({'message': 'Profile not found for user'}), 404
+            
+        # Fetch skills as array
+        from models.profile import Skill, Experience, Education, Activity
+        skills = [s.name for s in Skill.query.filter_by(profile_id=profile.id).all()]
+        # Fetch languages as array (store as comma-separated in profile.languages)
+        languages = (profile.languages or '').split(',') if hasattr(profile, 'languages') else []
+        # Fetch experience as list of dicts
+        experience = [
+            {
+                'company': e.company,
+                'title': e.title,
+                'start': str(e.start_date) if e.start_date else '',
+                'end': str(e.end_date) if e.end_date else '',
+            }
+            for e in Experience.query.filter_by(profile_id=profile.id).all()
+        ]
+        # Fetch education as list of dicts
+        education = [
+            {
+                'school': ed.school,
+                'degree': ed.degree,
+                'start': str(ed.start_year) if ed.start_year else '',
+                'end': str(ed.end_year) if ed.end_year else '',
+            }
+            for ed in Education.query.filter_by(profile_id=profile.id).all()
+        ]
+        # Fetch activity as list of dicts
+        activity = [
+            {
+                'type': a.type,
+                'content': a.content,
+                'date': a.date,
+            }
+            for a in Activity.query.filter_by(profile_id=profile.id).order_by(Activity.id.desc()).all()
+        ]
+        return jsonify({
+            'id': user.id,
+            'name': user.username,
+            'email': user.email,
+            'title': getattr(profile, 'title', ''),
+            'bio': profile.bio,
+            'location': profile.location,
+            'skills': skills,
+            'languages': languages,
+            'experience': experience,
+            'education': education,
+            'contact': {'email': user.email, 'phone': getattr(profile, 'phone', '')},
+            'activity': activity,
+            'connections': getattr(profile, 'connections', 0),
+            'mutualConnections': getattr(profile, 'mutualConnections', 0),
+            'avatarUrl': profile.avatar_url or '',
+            'socialLinks': [],
+        })
+    except Exception as e:
+        return jsonify({'message': f'Error fetching profile: {str(e)}'}), 500
+
+@profile_bp.route('/api/profile/test', methods=['GET'])
+def get_profile_test():
+    """Test endpoint that bypasses authentication for debugging"""
+    try:
+        # Get the first user and profile for testing
+        user = User.query.first()
+        if not user:
+            return jsonify({'message': 'No users found in database'}), 404
+            
+        profile = Profile.query.filter_by(user_id=user.id).first()
+        if not profile:
+            return jsonify({'message': 'No profile found for first user'}), 404
+            
+        # Fetch skills as array
+        from models.profile import Skill, Experience, Education, Activity
+        skills = [s.name for s in Skill.query.filter_by(profile_id=profile.id).all()]
+        # Fetch languages as array (store as comma-separated in profile.languages)
+        languages = (profile.languages or '').split(',') if hasattr(profile, 'languages') else []
+        # Fetch experience as list of dicts
+        experience = [
+            {
+                'company': e.company,
+                'title': e.title,
+                'start': str(e.start_date) if e.start_date else '',
+                'end': str(e.end_date) if e.end_date else '',
+            }
+            for e in Experience.query.filter_by(profile_id=profile.id).all()
+        ]
+        # Fetch education as list of dicts
+        education = [
+            {
+                'school': ed.school,
+                'degree': ed.degree,
+                'start': str(ed.start_year) if ed.start_year else '',
+                'end': str(ed.end_year) if ed.end_year else '',
+            }
+            for ed in Education.query.filter_by(profile_id=profile.id).all()
+        ]
+        # Fetch activity as list of dicts
+        activity = [
+            {
+                'type': a.type,
+                'content': a.content,
+                'date': a.date,
+            }
+            for a in Activity.query.filter_by(profile_id=profile.id).order_by(Activity.id.desc()).all()
+        ]
+        
+        return jsonify({
+            'id': user.id,
+            'name': user.username,
+            'email': user.email,
+            'title': getattr(profile, 'title', ''),
+            'bio': profile.bio,
+            'location': profile.location,
+            'skills': skills,
+            'languages': languages,
+            'experience': experience,
+            'education': education,
+            'contact': {'email': user.email, 'phone': getattr(profile, 'phone', '')},
+            'activity': activity,
+            'connections': getattr(profile, 'connections', 0),
+            'mutualConnections': getattr(profile, 'mutualConnections', 0),
+            'avatarUrl': profile.avatar_url or '',
+            'socialLinks': [],
+        })
+    except Exception as e:
+        return jsonify({'message': f'Error fetching profile: {str(e)}'}), 500
 
 @profile_bp.route('/api/profile', methods=['PUT'])
 @jwt_required()

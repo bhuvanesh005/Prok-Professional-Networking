@@ -39,3 +39,4 @@ class JobApplication(db.Model):
     # Relationships
     applicant = db.relationship('User', backref='job_applications')
 
+

@@ -31,3 +31,4 @@ class Message(db.Model):
     # Relationships
     sender = db.relationship('User', backref='sent_messages')
 
+
